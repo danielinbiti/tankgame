@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>坦克大战 - Battle City</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #1a1a2e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+
+        #game-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #game-title {
+            color: #ff6b6b;
+            font-size: 28px;
+            font-weight: bold;
+            text-shadow: 3px 3px 0 #8b0000;
+            margin-bottom: 10px;
+            letter-spacing: 4px;
+        }
+
+        #game-wrapper {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        #game-canvas {
+            border: 4px solid #4a4a6a;
+            background: #000;
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        #game-info {
+            color: #fff;
+            width: 120px;
+        }
+
+        .info-section {
+            background: #2a2a4a;
+            border: 2px solid #4a4a6a;
+            padding: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #4ecdc4;
+        }
+
+        .lives-display {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .tank-icon {
+            width: 16px;
+            height: 16px;
+            background: #f0e68c;
+            position: relative;
+        }
+
+        .tank-icon::before {
+            content: '';
+            position: absolute;
+            top: 6px;
+            left: 4px;
+            width: 8px;
+            height: 4px;
+            background: #f0e68c;
+        }
+
+        #controls-hint {
+            color: #888;
+            font-size: 12px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        #controls-hint span {
+            color: #4ecdc4;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* 开始菜单样式 */
+        #start-menu, #game-over-menu, #level-complete-menu {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background: rgba(0,0,0,0.9);
+            padding: 40px;
+            border: 3px solid #4ecdc4;
+            border-radius: 10px;
+        }
+
+        .menu-title {
+            color: #4ecdc4;
+            font-size: 32px;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 0 #1a5f5a;
+        }
+
+        .menu-button {
+            background: #4ecdc4;
+            color: #1a1a2e;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+            font-family: 'Courier New', monospace;
+        }
+
+        .menu-button:hover {
+            background: #45b7b8;
+            transform: scale(1.05);
+        }
+
+        .menu-stats {
+            color: #fff;
+            margin: 20px 0;
+            font-size: 16px;
+        }
+
+        .enemy-preview {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .enemy-type {
+            text-align: center;
+        }
+
+        .enemy-color {
+            width: 24px;
+            height: 24px;
+            margin: 0 auto 5px;
+            border: 2px solid #666;
+        }
+
+        .enemy-basic { background: #c0392b; }
+        .enemy-fast { background: #3498db; }
+        .enemy-heavy { background: #e67e22; }
+
+        .enemy-name {
+            color: #888;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="game-title">坦克大战 BATTLE CITY</div>
+        <div id="game-wrapper">
+            <canvas id="game-canvas" width="512" height="448"></canvas>
+            <div id="game-info">
+                <div class="info-section">
+                    <div class="info-label">关卡</div>
+                    <div class="info-value" id="level-display">1</div>
+                </div>
+                <div class="info-section">
+                    <div class="info-label">得分</div>
+                    <div class="info-value" id="score-display">0</div>
+                </div>
+                <div class="info-section">
+                    <div class="info-label">生命</div>
+                    <div class="lives-display" id="lives-display"></div>
+                </div>
+                <div class="info-section">
+                    <div class="info-label">剩余敌人</div>
+                    <div class="info-value" id="enemies-display">20</div>
+                </div>
+                <div class="info-section">
+                    <div class="info-label">最高分</div>
+                    <div class="info-value" id="highscore-display">0</div>
+                </div>
+            </div>
+        </div>
+        <div id="controls-hint">
+            <span>WASD / 方向键</span> 移动 &nbsp;&nbsp; <span>空格键</span> 射击 &nbsp;&nbsp; <span>P</span> 暂停
+        </div>
+
+        <!-- 开始菜单 -->
+        <div id="start-menu">
+            <div class="menu-title">坦克大战</div>
+            <button class="menu-button" id="start-btn">开始游戏</button>
+            <div class="enemy-preview">
+                <div class="enemy-type">
+                    <div class="enemy-color enemy-basic"></div>
+                    <div class="enemy-name">普通</div>
+                </div>
+                <div class="enemy-type">
+                    <div class="enemy-color enemy-fast"></div>
+                    <div class="enemy-name">快速</div>
+                </div>
+                <div class="enemy-type">
+                    <div class="enemy-color enemy-heavy"></div>
+                    <div class="enemy-name">重型</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 游戏结束菜单 -->
+        <div id="game-over-menu" class="hidden">
+            <div class="menu-title" style="color: #e74c3c;">游戏结束</div>
+            <div class="menu-stats">
+                <div>最终得分: <span id="final-score">0</span></div>
+                <div>到达关卡: <span id="final-level">1</span></div>
+            </div>
+            <button class="menu-button" id="restart-btn">重新开始</button>
+        </div>
+
+        <!-- 过关菜单 -->
+        <div id="level-complete-menu" class="hidden">
+            <div class="menu-title" style="color: #f1c40f;">关卡完成!</div>
+            <div class="menu-stats">
+                <div>当前得分: <span id="level-score">0</span></div>
+                <div>下一关卡: <span id="next-level">2</span></div>
+            </div>
+            <button class="menu-button" id="next-level-btn">下一关</button>
+        </div>
+    </div>
+
+    <!-- 游戏脚本 -->
+    <script src="js/utils.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/input.js"></script>
+    <script src="js/entities.js"></script>
+    <script src="js/levels.js"></script>
+    <script src="js/ai.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
