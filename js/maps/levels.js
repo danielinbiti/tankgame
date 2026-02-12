@@ -1,8 +1,6 @@
 /**
- * 关卡系统 - 地图数据和关卡管理
+ * 关卡数据 (0=空, 1=砖墙, 2=钢墙, 3=草地, 4=水, 5=基地)
  */
-
-// 关卡数据 (0=空, 1=砖墙, 2=钢墙, 3=草地, 4=水, 5=基地)
 const LEVEL_DATA = [
     // 第一关 - 基础关卡
     {
@@ -272,7 +270,6 @@ class LevelManager {
     }
 }
 
-// 导出到全局
 window.LEVEL_DATA = LEVEL_DATA;
 window.GameMap = GameMap;
 window.LevelManager = LevelManager;

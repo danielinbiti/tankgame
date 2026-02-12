@@ -5,6 +5,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('game-canvas');
     const game = new Game(canvas);
     
+    // 初始显示菜单场景
+    game.changeScene('menu');
+    game.startGameLoop();
+    
     // 绑定按钮事件
     document.getElementById('start-btn').addEventListener('click', () => {
         game.start();
